@@ -1,0 +1,55 @@
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.File;
+
+public class jsonFileGenerator {
+    public static void generateJsonFile(String value) throws Exception {
+        File inputFile = new File("C:\\Users\\Gowtham.P\\Downloads\\FinalConfig_F1.cfg");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+        try {
+            ObjectNode rootNode = (ObjectNode) objectMapper.readTree(inputFile);
+
+            // Navigate to the advSet array
+            ArrayNode advSetArray = (ArrayNode) rootNode.path("advSet");
+            if (advSetArray.isArray()) {
+                for (JsonNode advSetItem : advSetArray) {
+                    ArrayNode payloadArray = (ArrayNode) advSetItem.path("payload");
+                    if (payloadArray.isArray()) {
+                        for (JsonNode payloadItem : payloadArray) {
+                            JsonNode dataNode = payloadItem.path("data");
+                            if (!dataNode.isMissingNode() && dataNode.isTextual() && isNumeric(dataNode.asText())) {
+                                ((ObjectNode) payloadItem).put("data", value); // Update the data value
+                            }
+                        }
+                    }
+                }
+
+                // Serialize the modified JsonNode to JSON
+                String jsonOutput = objectMapper.writeValueAsString(rootNode);
+
+                // Write serialized JSON to an output file
+                String outputFileName = "D:\\" + value + ".json";
+                File outputFile = new File(outputFileName);
+                objectMapper.writeValue(outputFile, rootNode);
+
+                System.out.println("JSON file generated for value " + value + ": " + outputFile.getAbsolutePath());
+            } else {
+                System.out.println("advSet array is not an array.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private static boolean isNumeric(String str) {
+        return str != null && str.matches("-?\\d+");
+    }
+}
