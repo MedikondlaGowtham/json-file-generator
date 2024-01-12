@@ -1,0 +1,32 @@
+
+import java.util.List;
+import com.pravyuha.config.excelReader.excelReader;
+import com.pravyuha.config.jsonFileGenerator.jsonFileGenerator;
+
+public class iotConfigTool {
+    public static void main(String[] args) throws Exception {
+        String filePath = "D:\\EXCELFILE.xlsx"; // path to Excel file
+        String heading = "STUDENTID"; // The heading to extract data from
+
+        // Read data from the Excel file using ExcelReader module
+        List<excelReader.RowData> rowDataList = excelReader.readExcelData(filePath, heading);
+        // Convert data to hex in IOTconfigTool module
+        for (excelReader.RowData rowData : rowDataList) {
+            String value = convertToHex(rowData.getValue1());
+            rowData.setValue1(value);
+        }
+        // Generate individual JSON files for each cell value
+        for (excelReader.RowData rowData : rowDataList) {
+            String value = rowData.getValue1();
+            jsonFileGenerator.generateJsonFile(value); // Generate JSON file with value as data
+        }
+    }
+    private static String convertToHex(String asciiText) {
+
+        StringBuilder hexValue = new StringBuilder();
+        for (char c : asciiText.toCharArray()) {
+            hexValue.append(Integer.toHexString(c));
+        }
+        return hexValue.toString();
+    }
+}
